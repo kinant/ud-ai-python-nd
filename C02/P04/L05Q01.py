@@ -33,11 +33,22 @@ computation_cost = 1000  # amount of computation cost
 # Determine the cost rate based on the provider and calculate the total cost
 if provider == "AWS":
     ##
-    total_cost = 
+    cost_rate = 0.075
+    total_cost = computation_cost * (1 + cost_rate)
+    result = "Since you are using {}, your total cost is ${:.2f}.".format(provider, total_cost)
 elif provider == "GCP":
     ##
+    cost_rate = 0.089
+    total_cost = computation_cost * (1 + cost_rate)
+    result = "Since you are using {}, your total cost is ${:.2f}.".format(provider, total_cost)
 elif provider == "Azure":
     ##
+    cost_rate = 0.095
+    total_cost = computation_cost * (1 + cost_rate)
+    result = "Since you are using {}, your total cost is ${:.2f}.".format(provider, total_cost)
+else:
+    cost_rate = 0.00
+    result = "Provider not recognized."
 
 ### Notebook grading
 def get_solution(provider, computation_cost):
@@ -58,6 +69,6 @@ def get_solution(provider, computation_cost):
     return result
 
 if result == get_solution(provider, computation_cost):
-    print("Good job!")
+    print("Good job 2!")
 else:
     print("Oops! That doesn't look like the expected answer.")
