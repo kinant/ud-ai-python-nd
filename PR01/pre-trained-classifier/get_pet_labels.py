@@ -81,7 +81,7 @@ def get_pet_labels(image_dir):
         # check not already in dictionary
         if name not in results_dic:
             # if not, add it
-            results_dic[name] = [sanitize_text(name)]
+            results_dic[name] = [sanitize_text(name).strip()]
         else:
             # else print the warning
             print(f"Key {name} already exists in results_dic, with value {results_dic[name]}")
