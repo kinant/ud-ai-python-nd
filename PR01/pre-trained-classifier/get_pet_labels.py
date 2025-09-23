@@ -32,12 +32,12 @@ def sanitize_text(text):
     # "".join uses "" (empty string) as the delimiter and joins all elements of the list to create a complete string
     return "".join(
         # using list comprehensions, we get a list of all characters, in lowercase, which are alphabetic or a space
-        # from the stripped and split text
+        # from the stripped and split text (with spaces replacing underscores)
         [
             # lowercase the character
             c.lower()
             # for each character in the text (stripped, split - to remove the file extensions, and with '_'
-            # replaced by ' ' a single space.
+            # replaced by ' ' a single space).
             for c in text.strip().split('.')[0].replace('_', ' ')
             # checking that it is alphabetic or a space character
             if c.isalpha() or c == ' '
