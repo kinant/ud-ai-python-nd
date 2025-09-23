@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # */AIPND-revision/intropyproject-classify-pet-images/get_pet_labels.py
 #                                                                             
-# PROGRAMMER: 
-# DATE CREATED:                                  
+# PROGRAMMER: Kinan Turman
+# DATE CREATED: 09/23/2025
 # REVISED DATE: 
 # PURPOSE: Create the function get_pet_labels that creates the pet labels from 
 #          the image's filename. This function inputs: 
@@ -18,6 +18,31 @@
 ##
 # Imports python modules
 from os import listdir
+
+from torch.utils.hipify.hipify_python import value
+
+
+def sanitize_text(text):
+    """
+    Simple function that takes a string and returns it sanitized, that is, without numbers, symbols, etc.
+    :param text: the string to be sanitized
+    :return: the sanitized string
+    """
+
+    # "".join uses "" (empty string) as the delimiter and joins all elements of the list to create a complete string
+    return "".join(
+        # using list comprehensions, we get a list of all characters, in lowercase, which are alphabetic or a space
+        # from the stripped and split text
+        [
+            # lowercase the character
+            c.lower()
+            # for each character in the text (stripped, split - to remove the file extensions, and with '_'
+            # replaced by ' ' a single space.
+            for c in text.strip().split('.')[0].replace('_', ' ')
+            # checking that it is alphabetic or a space character
+            if c.isalpha() or c == ' '
+        ]
+    )
 
 # TODO 2: Define get_pet_labels function below please be certain to replace None
 #       in the return statement with results_dic dictionary that you create 
@@ -42,4 +67,23 @@ def get_pet_labels(image_dir):
     """
     # Replace None with the results_dic dictionary that you created with this
     # function
-    return None
+
+    # get the list of filenames
+    filenames = listdir(image_dir)
+
+    # init blank dictionary
+    results_dic = {}
+
+    # iterate over each filename and add to the dictionary
+    # key: filename
+    # value: "sanitized" filename, as a list
+    for name in filenames:
+        # check not already in dictionary
+        if name not in results_dic:
+            # if not, add it
+            results_dic[name] = [sanitize_text(name)]
+        else:
+            # else print the warning
+            print(f"Key {name} already exists in results_dic, with value {results_dic[name]}")
+
+    return results_dic

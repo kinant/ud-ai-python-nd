@@ -43,7 +43,7 @@ def get_input_args():
 
     # Create 3 command line arguments as mentioned above using add_argument() from ArgumentParser method
     # Argument 1: Folder that contains the pet images
-    parser.add_argument('--dir', type=str, default='pet_images',
+    parser.add_argument('--dir', type=str, default='pet_images/',
                         help='Path to the folder of pet images')
 
     parser.add_argument('--arch', type=str, default='vgg',
