@@ -3,8 +3,8 @@
 # */AIPND-revision/intropyproject-classify-pet-images/check_images.py
 #
 # TODO 0: Add your information below for Programmer & Date Created.                                                                             
-# PROGRAMMER: 
-# DATE CREATED:                                  
+# PROGRAMMER: Kinan Turman
+# DATE CREATED: 09/23/2025
 # REVISED DATE: 
 # PURPOSE: Classifies pet images using a pretrained CNN model, compares these
 #          classifications to the true identity of the pets in the images, and
@@ -37,13 +37,16 @@ from adjust_results4_isadog import adjust_results4_isadog
 from calculates_results_stats import calculates_results_stats
 from print_results import print_results
 
+# Import functions from time module
+from time import time, sleep
+
 # Main program function defined below
 def main():
     # TODO 0: Measures total program runtime by collecting start time
-    start_time = 
+    start_time = time()
     
     # TODO 1: Define get_input_args function within the file get_input_args.py
-    # This function retrieves 3 Command Line Arugments from user as input from
+    # This function retrieves 3 Command Line Arguments from user as input from
     # the user running the program from a terminal window. This function returns
     # the collection of these command line arguments from the function call as
     # the variable in_arg
@@ -66,7 +69,7 @@ def main():
     check_creating_pet_image_labels(results)
 
 
-    # TODO 3: Define classify_images function within the file classiy_images.py
+    # TODO 3: Define classify_images function within the file classify_images.py
     # Once the classify_images function has been defined replace first 'None' 
     # in the function call with in_arg.dir and replace the last 'None' in the
     # function call with in_arg.arch  Once you have done the replacements your
@@ -114,15 +117,18 @@ def main():
     # Prints summary results, incorrect classifications of dogs (if requested)
     # and incorrectly classified breeds (if requested)
     print_results(results, results_stats, None, True, True)
-    
+
+    sleep(15)
+
     # TODO 0: Measure total program runtime by collecting end time
-    end_time =
+    end_time = time()
     
     # TODO 0: Computes overall runtime in seconds & prints it in hh:mm:ss format
-    tot_time = #calculate difference between end time and start time
+    # calculate difference between end time and start time
+    tot_time = end_time - start_time
     print("\n** Total Elapsed Runtime:",
-          str(int((tot_time/3600)))+":"+str(int((tot_time%3600)/60))+":"
-          +str(int((tot_time%3600)%60)) )
+          str(round((tot_time/3600)))+":"+str(round((tot_time%3600)/60))+":"
+          +str(round((tot_time%3600)%60)) )
     
 
 # Call to main function to run the program
