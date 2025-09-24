@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # */AIPND-revision/intropyproject-classify-pet-images/calculates_results_stats.py
 #                                                                             
-# PROGRAMMER:
-# DATE CREATED:                                  
+# PROGRAMMER: Kinan Turman
+# DATE CREATED: 09/23/2025
 # REVISED DATE: 
 # PURPOSE: Create a function calculates_results_stats that calculates the 
 #          statistics of the results of the programrun using the classifier's model 
@@ -41,7 +41,8 @@
 # TODO 5: Define calculates_results_stats function below, please be certain to replace None
 #       in the return statement with the results_stats_dic dictionary that you create 
 #       with this function
-# 
+#
+
 def calculates_results_stats(results_dic):
     """
     Calculates statistics of the results of the program run using classifier's model 
@@ -69,5 +70,66 @@ def calculates_results_stats(results_dic):
                      on how to calculate the counts and statistics.
     """        
     # Replace None with the results_stats_dic dictionary that you created with 
-    # this function 
-    return None
+    # this function
+
+    # Define constants
+    # A: Number of Correct Dog matches
+    # B: Number of Dog Images
+    # C: Number of Correct Non-Dog matches
+    # D: Number of Not Dog Images
+    # E: Number of Correct Breed matches
+    # Y: Number of label matches
+    # Z: Number of Images
+
+    A = "n_correct_dogs"
+    B = "n_dogs_img"
+    C = "n_correct_notdogs"
+    D = "n_notdogs_img"
+    E = "n_correct_breed"
+    Y = "n_match"
+    Z = "n_images"
+
+    # init results_stats_dic with all values to 0, except for Z (n_images)
+    # since we can already calculate this as the length of results_dic
+    results_stats_dic = {Z: len(results_dic), A: 0, B: 0, C: 0, D: 0, E: 0, Y: 0}
+
+    # Compute Counts
+    for key in results_dic:
+        if results_dic[key][3] == 1:
+            # Increment counter B
+            results_stats_dic[B] += 1
+
+            if results_dic[key][4] == 1:
+                # Increment counter A
+                results_stats_dic[A] += 1
+
+            if results_dic[key][2] == 1:
+                # Increment counter E
+                results_stats_dic[E] += 1
+
+        elif results_dic[key][3] == 0:
+            # Increment Counter D
+            results_stats_dic[D] += 1
+
+            if results_dic[key][4] == 0:
+                # Increment Counter C
+                results_stats_dic[C] += 1
+
+        if results_dic[key][2] == 1:
+            # Increment counter Y
+            results_stats_dic[Y] += 1
+
+    # Compute Percentages
+    # Objective _1_a: Percentage of Correctly Classified Dog Images
+    results_stats_dic["pct_correct_dogs"] = (results_stats_dic[A] / results_stats_dic[B]) * 100
+
+    # Objective _1_b: Percentage of Correctly Classified Non-Dog Images
+    results_stats_dic["pct_correct_notdogs"] = (results_stats_dic[C] / results_stats_dic[D]) * 100 if results_stats_dic[D] > 0 else 0
+
+    # Objective 2: Percentage of Correctly Classified Dog Breeds
+    results_stats_dic["pct_correct_breed"] = (results_stats_dic[E] / results_stats_dic[B]) * 100
+
+    # (Optional): Percentage Label Matches ( regardless if they're a dog)
+    results_stats_dic["pct_match"] = (results_stats_dic[Y] / results_stats_dic[Z]) * 100
+
+    return results_stats_dic
