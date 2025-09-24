@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # */AIPND-revision/intropyproject-classify-pet-images/print_results.py
 #                                                                             
-# PROGRAMMER: 
-# DATE CREATED:
+# PROGRAMMER: Kinan Turman
+# DATE CREATED: 09/24/2025
 # REVISED DATE: 
 # PURPOSE: Create a function print_results that prints the results statistics
 #          from the results statistics dictionary (results_stats_dic). It 
@@ -67,9 +67,13 @@ def print_results(results_dic, results_stats_dic, model,
     print("PRINTING RESULTS: ")
     print("====================")
     print()
+
     # First Print the Model
     print(f"Model: {model}")
 
+    # Print count stats
+    # We iterate over each key in results_stats_dic and only print those that start with "n"
+    # We use replace() and title() functions to properly format the string being printed.
     print()
     print("----- COUNTS -----")
     for key in results_stats_dic:
@@ -83,6 +87,11 @@ def print_results(results_dic, results_stats_dic, model,
                 .title()
                 }: {results_stats_dic[key]}")
 
+    # Print count stats
+    # We iterate over each key in results_stats_dic and only print those that start with "pct"
+    # We use replace() and title() functions to properly format the string being printed.
+    # I know we do an extra loop over the dictionary, but we get cleaner and more
+    # compact code this way (in my opinion)
     print()
     print("----- PERCENTAGES -----")
     for key in results_stats_dic:
@@ -95,7 +104,7 @@ def print_results(results_dic, results_stats_dic, model,
                 .title()
                 }: {results_stats_dic[key]:.2f}")
 
-
+    # Print optional stats for misclassified dogs
     if print_incorrect_dogs and (results_stats_dic["n_correct_dogs"]
              + results_stats_dic["n_correct_notdogs"] != results_stats_dic["n_images"]):
 
@@ -106,6 +115,7 @@ def print_results(results_dic, results_stats_dic, model,
             if sum(results_dic[key][3:]) == 1:
                 print(f"Img: {key} - {results_dic[key][0]} as {results_dic[key][1]}")
 
+    # Print optional stats for misclassified breeds
     if print_incorrect_breed and (results_stats_dic["n_correct_dogs"] != results_stats_dic["n_correct_breed"]):
 
         print()
