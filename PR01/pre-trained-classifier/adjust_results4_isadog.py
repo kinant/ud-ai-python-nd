@@ -67,6 +67,7 @@ def adjust_results4_isadog(results_dic, dogfile):
     Returns:
            None - results_dic is mutable data type so no return needed.
     """           
+    # create empty dictionary for the dog names
     dognames_dic = {}
 
     # first we open the file
@@ -92,5 +93,6 @@ def adjust_results4_isadog(results_dic, dogfile):
                 # check if the pet image label is a dog
                 1 if results_dic[key][0] in dognames_dic else 0,
                 # check if any of the classifier labels (they are comma separated) is a dog
+                # NOTE: we use a list comprehension to check if any classifier label is in dognames_dic
                 1 if any([label.strip() in dognames_dic for label in results_dic[key][1].split(",")]) else 0
             ])
