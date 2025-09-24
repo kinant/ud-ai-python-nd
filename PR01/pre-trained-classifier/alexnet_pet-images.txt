@@ -335,11 +335,11 @@ Number Of Match: 30
 % Match: 75.00
 
 ----- MISCLASSIFIED BREEDS OF DOGS -----
-Misclassified beagle as english foxhound
-Misclassified beagle as walker hound, walker foxhound
-Misclassified boston terrier as basenji
-Misclassified golden retriever as tibetan mastiff
-Misclassified golden retriever as afghan hound, afghan
-Misclassified great pyrenees as kuvasz
+Img: Beagle_01141.jpg - beagle as english foxhound
+Img: Beagle_01170.jpg - beagle as walker hound, walker foxhound
+Img: Boston_terrier_02285.jpg - boston terrier as basenji
+Img: Golden_retriever_05182.jpg - golden retriever as tibetan mastiff
+Img: Golden_retriever_05257.jpg - golden retriever as afghan hound, afghan
+Img: Great_pyrenees_05367.jpg - great pyrenees as kuvasz
 
 ** Total Elapsed Runtime: 0:0:1

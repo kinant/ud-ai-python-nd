@@ -335,11 +335,11 @@ Number Of Match: 33
 % Match: 82.50
 
 ----- MISCLASSIFIED DOGS -----
-Misclassified cat as norwegian elkhound, elkhound
+Img: cat_01.jpg - cat as norwegian elkhound, elkhound
 
 ----- MISCLASSIFIED BREEDS OF DOGS -----
-Misclassified beagle as walker hound, walker foxhound
-Misclassified golden retriever as leonberg
-Misclassified great pyrenees as kuvasz
+Img: Beagle_01170.jpg - beagle as walker hound, walker foxhound
+Img: Golden_retriever_05182.jpg - golden retriever as leonberg
+Img: Great_pyrenees_05367.jpg - great pyrenees as kuvasz
 
 ** Total Elapsed Runtime: 0:0:1

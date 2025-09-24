@@ -335,7 +335,7 @@ Number Of Match: 35
 % Match: 87.50
 
 ----- MISCLASSIFIED BREEDS OF DOGS -----
-Misclassified beagle as walker hound, walker foxhound
-Misclassified great pyrenees as kuvasz
+Img: Beagle_01170.jpg - beagle as walker hound, walker foxhound
+Img: Great_pyrenees_05367.jpg - great pyrenees as kuvasz
 
 ** Total Elapsed Runtime: 0:0:3

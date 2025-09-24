@@ -1,0 +1,82 @@
+Command Line Arguments:
+     dir = uploaded_images/ 
+    arch = vgg 
+ dogfile = dognames.txt
+
+Pet Image Label Dictionary has 4 key-value pairs.
+Below are 4 of them:
+ 1 key:                  Bucket_01.jpg  label:                     bucket
+ 2 key:                    Frog_01.jpg  label:                       frog
+ 3 key:              Pomeranian_01.jpg  label:                 pomeranian
+ 4 key:              Pomeranian_02.jpg  label:                 pomeranian
+
+     MATCH:
+
+                 Bucket_01.jpg: 
+Real:                     bucket   Classifier:                   bucket, pail
+
+                   Frog_01.jpg: 
+Real:                       frog   Classifier:           tree frog, tree-frog
+
+             Pomeranian_01.jpg: 
+Real:                 pomeranian   Classifier:                     pomeranian
+
+ NOT A MATCH:
+
+             Pomeranian_02.jpg: 
+Real:                 pomeranian   Classifier:          angora, angora rabbit
+
+# Total Images 4 # Matches: 3 # NOT Matches: 1
+
+     MATCH:
+
+                 Bucket_01.jpg: 
+Real:                     bucket   Classifier:                   bucket, pail  
+PetLabelDog: 0  ClassLabelDog: 0
+
+                   Frog_01.jpg: 
+Real:                       frog   Classifier:           tree frog, tree-frog  
+PetLabelDog: 0  ClassLabelDog: 0
+
+             Pomeranian_01.jpg: 
+Real:                 pomeranian   Classifier:                     pomeranian  
+PetLabelDog: 1  ClassLabelDog: 1
+
+ NOT A MATCH:
+
+             Pomeranian_02.jpg: 
+Real:                 pomeranian   Classifier:          angora, angora rabbit  
+PetLabelDog: 1  ClassLabelDog: 0
+
+# Total Images 4 # Matches: 3 # NOT Matches: 1
+
+ ** Statistics from calculates_results_stats() function:
+N Images:  4  N Dog Images:  2  N NotDog Images:  2 
+Pct Corr dog:  50.0 Pct Corr NOTdog: 100.0  Pct Corr Breed:  50.0
+
+ ** Check Statistics - calculated from this function as a check:
+N Images:  4  N Dog Images:  2  N NotDog Images:  2 
+Pct Corr dog:  50.0 Pct Corr NOTdog: 100.0  Pct Corr Breed:  50.0
+
+====================
+PRINTING RESULTS: 
+====================
+
+Model: vgg
+
+----- COUNTS -----
+Number Of Images: 4
+Number Of Dog Images: 2
+Number Of Not Dog Images: 2
+Number Of Match: 3
+
+----- PERCENTAGES -----
+% Correct Dog: 50.00
+% Correct "Not-A" Dog: 100.00
+% Correct Breed: 50.00
+% Match: 75.00
+
+----- MISCLASSIFIED DOGS -----
+Img: Pomeranian_02.jpg - pomeranian as angora, angora rabbit
+
+** Total Elapsed Runtime: 0:0:0

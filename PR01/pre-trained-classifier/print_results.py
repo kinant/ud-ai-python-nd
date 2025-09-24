@@ -104,7 +104,7 @@ def print_results(results_dic, results_stats_dic, model,
 
         for key in results_dic:
             if sum(results_dic[key][3:]) == 1:
-                print(f"Misclassified {results_dic[key][0]} as {results_dic[key][1]}")
+                print(f"Img: {key} - {results_dic[key][0]} as {results_dic[key][1]}")
 
     if print_incorrect_breed and (results_stats_dic["n_correct_dogs"] != results_stats_dic["n_correct_breed"]):
 
@@ -113,4 +113,4 @@ def print_results(results_dic, results_stats_dic, model,
 
         for key in results_dic:
             if sum(results_dic[key][3:]) == 2 and results_dic[key][2] == 0:
-                print(f"Misclassified {results_dic[key][0]} as {results_dic[key][1]}")
+                print(f"Img: {key} - {results_dic[key][0]} as {results_dic[key][1]}")
