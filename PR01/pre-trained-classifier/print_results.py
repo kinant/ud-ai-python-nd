@@ -61,6 +61,56 @@ def print_results(results_dic, results_stats_dic, model,
                               False doesn't print anything(default) (bool) 
     Returns:
            None - simply printing results.
-    """    
-    None
-                
+    """
+    print()
+    print("====================")
+    print("PRINTING RESULTS: ")
+    print("====================")
+    print()
+    # First Print the Model
+    print(f"Model: {model}")
+
+    print()
+    print("----- COUNTS -----")
+    for key in results_stats_dic:
+        if key.startswith('n') and "correct" not in key:
+            print(
+                f"{key.replace("n_", "number of ")
+                .replace("_img", " images")
+                .replace("dogs", "dog")
+                .replace("not",  "not ")
+                .replace("_", " ")
+                .title()
+                }: {results_stats_dic[key]}")
+
+    print()
+    print("----- PERCENTAGES -----")
+    for key in results_stats_dic:
+        if key.startswith('pct'):
+            print(
+                f"{key.replace("pct_", "% ")
+                .replace("dogs", "dog")
+                .replace("not", '"Not-a" ')
+                .replace("_", " ")
+                .title()
+                }: {results_stats_dic[key]:.2f}")
+
+
+    if print_incorrect_dogs and (results_stats_dic["n_correct_dogs"]
+             + results_stats_dic["n_correct_notdogs"] != results_stats_dic["n_images"]):
+
+        print()
+        print("----- MISCLASSIFIED DOGS -----")
+
+        for key in results_dic:
+            if sum(results_dic[key][3:]) == 1:
+                print(f"Misclassified {results_dic[key][0]} as {results_dic[key][1]}")
+
+    if print_incorrect_breed and (results_stats_dic["n_correct_dogs"] != results_stats_dic["n_correct_breed"]):
+
+        print()
+        print("----- MISCLASSIFIED BREEDS OF DOGS -----")
+
+        for key in results_dic:
+            if sum(results_dic[key][3:]) == 2 and results_dic[key][2] == 0:
+                print(f"Misclassified {results_dic[key][0]} as {results_dic[key][1]}")
