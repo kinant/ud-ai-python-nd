@@ -30,6 +30,7 @@ def test_network(net, trainloader):
 
 def imshow(image, ax=None, title=None, normalize=True):
     """Imshow for Tensor."""
+
     if ax is None:
         fig, ax = plt.subplots()
     image = image.numpy().transpose((1, 2, 0))
