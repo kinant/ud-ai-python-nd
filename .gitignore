@@ -185,3 +185,5 @@ Cat_Dog_data/
 Course 05 - Neural Networks/AI Programming with PyTorch/Cat_Dog_data/.DS_Store
 
 Course 05 - Neural Networks/AI Programming with PyTorch/Cat_Dog_data/test/.DS_Store
+
+*.jpg
