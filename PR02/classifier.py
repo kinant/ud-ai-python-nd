@@ -6,6 +6,7 @@ from torch import nn
 from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
 import PR02.helpers.utils as utils
+from PR02.helpers.torch_helpers import get_device
 from os import path
 from collections import OrderedDict
 
@@ -68,7 +69,11 @@ class ImageClassifier():
         self._lr = lr
         self._n_epochs = n_epochs
         self._checkpoint_dir = checkpoint_dir
-        self._use_cuda = use_cuda
+
+        if use_cuda:
+            self._device = get_device()
+        else:
+            self._device = get_device('cpu')
 
         self._data_dirs: dict = {}
         self._data_transforms: dict = {}
