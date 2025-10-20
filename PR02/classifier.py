@@ -7,6 +7,7 @@ from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
 import PR02.helpers.utils as utils
 from os import path
+from collections import OrderedDict
 
 import json
 
@@ -34,22 +35,34 @@ class ImageClassifier():
         'densenet': 'densenet',
     }
 
-    def set_params_requires_grad(self):
+    HIDDEN_UNITS = 1024
+    LEARNING_RATE = 0.003
+    DROP_OUT = 0.5
+    NUM_EPOCHS = 25
+    USE_CUDA = True
+
+    def set_params_requires_grad_false(self):
         if self.model is not None:
             for param in self.model.parameters():
                 param.requires_grad = False
 
-    def init_model(self, model_name='vgg'):
-        model = None
+    def init_model(self):
 
-        if model_name == self.ARCHITECTURES['alexnet']:
-            model = models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
+        if self._model_name == self.ARCHITECTURES['alexnet']:
+            self._model = models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
+            self._num_features = self._model.classifier[1].in_features
 
-        return model
+        elif self._model_name == self.ARCHITECTURES['densenet']:
+            self._model = models.densenet121(weights=models.DenseNet121_Weights.DEFAULT)
+            self._num_features = self._model.classifier.in_features
+
+        else:
+            self._model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
+            self._num_features = self._model.classifier[0].in_features
 
     def __init__(self, model='vgg'):
-        self._model = self.init_model(model)
-        self._device = get_device()
+        self._model_name = model
+        self._model = None
 
         self._data_dirs: dict = {}
         self._data_transforms: dict = {}
@@ -57,11 +70,17 @@ class ImageClassifier():
         self._data_dict: dict = {}
         self._dataloaders: dict = {}
         self._dataset_sizes: dict = {}
+        self.set_data_transforms()
 
         self._class_names: list = []
         self._cat_to_name: list = []
+        self._num_classes = 0
+        self._num_features = 0
 
-        self.set_data_transforms()
+
+    @property
+    def model(self):
+        return self._model
 
     @property
     def data_transforms(self) -> dict:
@@ -142,7 +161,22 @@ class ImageClassifier():
         }
 
         self._class_names = self._image_datasets['train'].classes
+        self._num_classes = len(self._class_names)
 
     def load_cat_to_name(self, filepath: str) -> None:
         with open(filepath, 'r') as f:
             self._cat_to_name = json.load(f)
+
+    def show_model_summary(self) -> None:
+        print(f'Model summary:')
+        print(self._model)
+
+    def set_classifier(self) -> None:
+        self._model.classifier = nn.Sequential(
+            OrderedDict([
+                ('fc1', nn.Linear(self._num_features, self.HIDDEN_UNITS)),
+                ('drop', nn.Dropout(self.DROP_OUT)),
+                ('relu', nn.ReLU()),
+                ('fc2', nn.Linear(self.HIDDEN_UNITS, self._num_classes)),
+                ('output', nn.LogSoftmax(dim=1))
+            ]))
