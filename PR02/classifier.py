@@ -11,35 +11,35 @@ from collections import OrderedDict
 
 import json
 
+# IMAGE CONSTANTS
+IMG_HEIGHT = 224
+IMG_WIDTH = 224
+IMG_SIZE = (IMG_WIDTH, IMG_HEIGHT)
+IMG_RESIZE = (255, 255)
+BATCH_SIZE = 64
+IMG_ROTATION = 45
+
+# DATASET CONSTANTS
+DATASETS = {
+    'train': 'train',
+    'valid': 'valid',
+    'test': 'test',
+}
+
+# FOR MODEL DEFINITION AND TRAINING
+ARCHITECTURES = {
+    'vgg': 'vgg',
+    'alexnet': 'alexnet',
+    'densenet': 'densenet',
+}
+
+HIDDEN_UNITS = 1024
+LEARNING_RATE = 0.003
+DROP_OUT = 0.5
+NUM_EPOCHS = 25
+USE_CUDA = True
+
 class ImageClassifier():
-
-    # IMAGE CONSTANTS
-    IMG_HEIGHT = 224
-    IMG_WIDTH = 224
-    IMG_SIZE = (IMG_WIDTH, IMG_HEIGHT)
-    IMG_RESIZE = (255, 255)
-    BATCH_SIZE = 64
-    IMG_ROTATION = 45
-
-    # DATASET CONSTANTS
-    DATASETS = {
-        'train':'train',
-        'valid':'valid',
-        'test':'test',
-    }
-
-    # FOR MODEL DEFINITION AND TRAINING
-    ARCHITECTURES = {
-        'vgg': 'vgg',
-        'alexnet': 'alexnet',
-        'densenet': 'densenet',
-    }
-
-    HIDDEN_UNITS = 1024
-    LEARNING_RATE = 0.003
-    DROP_OUT = 0.5
-    NUM_EPOCHS = 25
-    USE_CUDA = True
 
     def set_params_requires_grad_false(self):
         if self.model is not None:
@@ -47,12 +47,11 @@ class ImageClassifier():
                 param.requires_grad = False
 
     def init_model(self):
-
-        if self._model_name == self.ARCHITECTURES['alexnet']:
+        if self._model_name == ARCHITECTURES['alexnet']:
             self._model = models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
             self._num_features = self._model.classifier[1].in_features
 
-        elif self._model_name == self.ARCHITECTURES['densenet']:
+        elif self._model_name == ARCHITECTURES['densenet']:
             self._model = models.densenet121(weights=models.DenseNet121_Weights.DEFAULT)
             self._num_features = self._model.classifier.in_features
 
@@ -60,9 +59,16 @@ class ImageClassifier():
             self._model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
             self._num_features = self._model.classifier[0].in_features
 
-    def __init__(self, model='vgg'):
-        self._model_name = model
+    def __init__(self, model_name=ARCHITECTURES['vgg'], n_hidden=HIDDEN_UNITS,
+                 lr=LEARNING_RATE, n_epochs=NUM_EPOCHS, checkpoint_dir="", use_cuda=USE_CUDA):
+        self._model_name = model_name
         self._model = None
+
+        self._n_hidden = n_hidden
+        self._lr = lr
+        self._n_epochs = n_epochs
+        self._checkpoint_dir = checkpoint_dir
+        self._use_cuda = use_cuda
 
         self._data_dirs: dict = {}
         self._data_transforms: dict = {}
@@ -108,19 +114,19 @@ class ImageClassifier():
 
     def set_data_transforms(self) -> None:
         self._data_transforms = {
-            self.DATASETS['train']: transforms.Compose([transforms.RandomRotation(self.IMG_ROTATION),
-                                             transforms.RandomResizedCrop(self.IMG_SIZE),
+            DATASETS['train']: transforms.Compose([transforms.RandomRotation(IMG_ROTATION),
+                                             transforms.RandomResizedCrop(IMG_SIZE),
                                              transforms.RandomHorizontalFlip(),
                                              transforms.ToTensor(),
                                              transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)]),
 
-            self.DATASETS['valid']: transforms.Compose([transforms.Resize(self.IMG_RESIZE),
-                                             transforms.CenterCrop(self.IMG_SIZE),
+            DATASETS['valid']: transforms.Compose([transforms.Resize(IMG_RESIZE),
+                                             transforms.CenterCrop(IMG_SIZE),
                                              transforms.ToTensor(),
                                              transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)]),
 
-            self.DATASETS['test']: transforms.Compose([transforms.Resize(self.IMG_RESIZE),
-                                             transforms.CenterCrop(self.IMG_SIZE),
+            DATASETS['test']: transforms.Compose([transforms.Resize(IMG_RESIZE),
+                                             transforms.CenterCrop(IMG_SIZE),
                                              transforms.ToTensor(),
                                              transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)])
         }
@@ -128,34 +134,34 @@ class ImageClassifier():
     def load_data(self, data_dir: str) -> None:
 
         self._data_dirs = {
-            key: path.join(data_dir, self.DATASETS[key])
-            for key in self.DATASETS.keys()
+            key: path.join(data_dir, DATASETS[key])
+            for key in DATASETS.keys()
         }
 
         self._image_datasets = {
             key: datasets.ImageFolder(self._data_dirs[key], transform=self.data_transforms[key])
-            for key in self.DATASETS.keys()
+            for key in DATASETS.keys()
         }
 
-        self._dataset_sizes = {key: len(self._image_datasets[key]) for key in self.DATASETS.keys()}
+        self._dataset_sizes = {key: len(self._image_datasets[key]) for key in DATASETS.keys()}
 
         self._dataloaders = {
 
-            self.DATASETS['train']: torch.utils.data.DataLoader(
+            DATASETS['train']: torch.utils.data.DataLoader(
                 self._image_datasets['train'],
-                batch_size=self.BATCH_SIZE,
+                batch_size=BATCH_SIZE,
                 shuffle=True,
             ),
 
-            self.DATASETS['valid']: torch.utils.data.DataLoader(
+            DATASETS['valid']: torch.utils.data.DataLoader(
                 self._image_datasets['valid'],
-                batch_size=self.BATCH_SIZE,
+                batch_size=BATCH_SIZE,
                 shuffle=False,
             ),
 
-            self.DATASETS['test']: torch.utils.data.DataLoader(
+            DATASETS['test']: torch.utils.data.DataLoader(
                 self._image_datasets['test'],
-                batch_size=self.BATCH_SIZE,
+                batch_size=BATCH_SIZE,
                 shuffle=False,
             )
         }
@@ -171,12 +177,12 @@ class ImageClassifier():
         print(f'Model summary:')
         print(self._model)
 
-    def set_classifier(self) -> None:
+    def set_classifier(self, n_hidden=HIDDEN_UNITS) -> None:
         self._model.classifier = nn.Sequential(
             OrderedDict([
-                ('fc1', nn.Linear(self._num_features, self.HIDDEN_UNITS)),
-                ('drop', nn.Dropout(self.DROP_OUT)),
+                ('fc1', nn.Linear(self._num_features, n_hidden)),
+                ('drop', nn.Dropout(DROP_OUT)),
                 ('relu', nn.ReLU()),
-                ('fc2', nn.Linear(self.HIDDEN_UNITS, self._num_classes)),
+                ('fc2', nn.Linear(n_hidden, self._num_classes)),
                 ('output', nn.LogSoftmax(dim=1))
             ]))
