@@ -6,7 +6,7 @@ from torch import nn
 from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
 import PR02.helpers.utils as utils
-from PR02.helpers.torch_helpers import get_device
+from PR02.helpers.torch_helpers import get_device, print_device_info
 from os import path
 from collections import OrderedDict
 
@@ -191,3 +191,9 @@ class ImageClassifier():
                 ('fc2', nn.Linear(n_hidden, self._num_classes)),
                 ('output', nn.LogSoftmax(dim=1))
             ]))
+
+    def show_model_device_info(self):
+        print_device_info(self._device)
+
+    def get_class_to_idx(self):
+        return self._image_datasets['train'].class_to_idx
