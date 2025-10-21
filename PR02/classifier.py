@@ -44,7 +44,7 @@ USE_CUDA = True
 class ImageClassifier():
 
     def set_params_requires_grad_false(self):
-        if self.model is not None:
+        if self._model is not None:
             for param in self.model.parameters():
                 param.requires_grad = False
 
@@ -60,6 +60,8 @@ class ImageClassifier():
         else:
             self._model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
             self._num_features = self._model.classifier[0].in_features
+
+        self.set_params_requires_grad_false()
 
     def __init__(self, model_name=ARCHITECTURES['vgg'], n_hidden=HIDDEN_UNITS,
                  lr=LEARNING_RATE, n_epochs=NUM_EPOCHS, checkpoint_dir="", use_cuda=USE_CUDA):
