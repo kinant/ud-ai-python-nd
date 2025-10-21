@@ -11,6 +11,7 @@ from os import path
 from collections import OrderedDict
 
 import json
+from timeit import default_timer as timer
 
 # IMAGE CONSTANTS
 IMG_HEIGHT = 224
@@ -309,9 +310,9 @@ class ImageClassifier():
         print(
             f"Epoch: {epoch + 1} | "
             f"train_loss: {self._results["train_loss"]:.4f} | "
-            f"train_acc: {self._results["train_acc"]:.4f} | "
+            f"train_acc: {self._results["train_acc"] * 100:.2f}% | "
             f"valid_loss: {self._results["valid_loss"]:.4f} | "
-            f"valid_acc: {self._results["valid_acc"]:.4f}"
+            f"valid_acc: {self._results["valid_acc"] * 100:.2f}%"
         )
 
         # Update Results dict
@@ -339,9 +340,13 @@ class ImageClassifier():
             "valid_acc": []
         }
 
+        start_time = None
+
         try:
             from tqdm.auto import tqdm
             print("'tqdm' found")
+
+            start_time = timer()
 
             for epoch in tqdm(range(num_epochs)):
                 self._results["train_loss"], self._results["train_acc"] = self.train_step()
@@ -351,13 +356,37 @@ class ImageClassifier():
 
         except ModuleNotFoundError:
             print("'tqdm' not found, using normal range function")
+
+            start_time = timer()
+
             for epoch in range(num_epochs):
                 self._results["train_loss"], self._results["train_acc"] = self.train_step()
                 self._results["valid_loss"], self._results["valid_acc"] = self.valid_step()
 
                 self.train_results(epoch)
 
+        end_time = timer()
+        elapsed_time = end_time - start_time
+        print(f"Training Complete! Total training time: {elapsed_time} seconds")
+
         return self._results_dict
+
+    def check_accuracy_on_test_data(self):
+        correct, total = 0, 0
+
+        self._model.to(self._device)
+
+        with torch.no_grad():
+            for inputs, labels in self._dataloaders['test']:
+                inputs, labels = inputs.to(self._device), labels.to(self._device)
+
+                logps = self._model(inputs)
+                top_p, top_class = logps.topk(1, dim=1)
+                equals = top_class == labels.view(*top_class.shape)
+                correct += equals.sum().item()
+                total += labels.size(0)
+
+        print(f"Accuracy of the network on the {self._dataloaders['test']} test images:{(correct / total) * 100:.2f}%")
 
 
 
