@@ -1,7 +1,7 @@
 from typing import Any
 
 import torch
-from torch import nn
+from torch import nn, optim
 
 from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
@@ -87,6 +87,24 @@ class ImageClassifier():
         self._cat_to_name: list = []
         self._num_classes = 0
         self._num_features = 0
+
+        self._criterion = None
+        self._optimizer = None
+
+        self._results = {
+            "train_loss": 0,
+            "train_acc": 0,
+            "valid_loss": 0,
+            "valid_acc": 0
+        }
+
+        self._results_dict = {
+            "train_loss": [],
+            "train_acc": [],
+            "valid_loss": [],
+            "valid_acc": []
+        }
+
 
 
     @property
@@ -197,3 +215,156 @@ class ImageClassifier():
 
     def get_class_to_idx(self):
         return self._image_datasets['train'].class_to_idx
+
+    def set_criterion_and_optimizer(self):
+        self._criterion = nn.CrossEntropyLoss()
+        self._optimizer = optim.SGD(self._model.parameters(), lr=LEARNING_RATE)
+
+    # https://www.kaggle.com/code/tirendazacademy/cats-dogs-classification-with-pytorch
+    def train_step(self):
+        # Put the model in train mode
+        self._model.train()
+
+        # Init train loss and train accuracy
+        train_loss, train_correct = 0, 0
+
+        for inputs, labels in self._dataloaders['train']:
+            inputs, labels = inputs.to(self._device), labels.to(self._device)
+
+            # Reset gradients
+            self._optimizer.zero_grad()
+
+            # Forward pass
+            logps = self._model(inputs)
+            loss = self._criterion(logps, labels)
+
+            # Add to the training loss
+            train_loss += loss.item()
+
+            # Backward pass
+            loss.backward()
+
+            # Update weights
+            self._optimizer.step()
+
+            # Get the probabilities
+            ps = torch.exp(logps)
+
+            # Get the top class
+            _, top_class = ps.topk(1, dim=1)
+
+            # Get list of all equalities top_class == label
+            equals = top_class == labels.view(*top_class.shape)
+
+            # print(f"TRAIN EQUALS: {equals}")
+
+            # Update training corrects
+            train_correct += torch.sum(equals).item()
+            # print(f"Running Train Corrects: {train_correct}")
+
+        # Calculate metrics
+        train_loss = train_loss / len(self._dataloaders['train'].dataset)
+        train_accuracy = train_correct / len(self._dataloaders['train'].dataset)
+
+        return train_loss, train_accuracy
+
+    def valid_step(self):
+        # Put model in eval mode
+        self._model.eval()
+
+        # Setup test loss and test accuracy values
+        valid_loss, valid_correct = 0, 0
+
+        # Turn on inference context manager
+        with torch.no_grad():
+            # Loop through DataLoader batches
+            for inputs, labels in self._dataloaders['valid']:
+                inputs, labels = inputs.to(self._device), labels.to(self._device)
+
+                # 1. Forward pass
+                logps = self._model(inputs)
+
+                # 2. Calculate and accumulate loss
+                loss = self._criterion(logps, labels)
+                valid_loss += loss.item()
+
+                # Calculate and accumulate accuracy
+                ps = torch.exp(logps)
+                top_p, top_class = ps.topk(1, dim=1)
+                equals = top_class == labels.view(*top_class.shape)
+
+                # print(f"VALID EQUALS: {equals}")
+
+                valid_correct += torch.sum(equals).item()
+                # print(f"Running Valid Corrects: {valid_correct}")
+
+        # Adjust metrics to get average loss and accuracy per batch
+        valid_loss = valid_loss / len(self._dataloaders['valid'].dataset)
+        valid_acc = valid_correct / len(self._dataloaders['valid'].dataset)
+        return valid_loss, valid_acc
+
+    def train_results(self, epoch) -> None:
+
+        # Print Results
+        print(
+            f"Epoch: {epoch + 1} | "
+            f"train_loss: {self._results["train_loss"]:.4f} | "
+            f"train_acc: {self._results["train_acc"]:.4f} | "
+            f"valid_loss: {self._results["valid_loss"]:.4f} | "
+            f"valid_acc: {self._results["valid_acc"]:.4f}"
+        )
+
+        # Update Results dict
+        self._results_dict["train_loss"].append(self._results["train_loss"])
+        self._results_dict["train_acc"].append(self._results["train_acc"])
+        self._results_dict["valid_loss"].append(self._results["valid_loss"])
+        self._results_dict["valid_acc"].append(self._results["valid_acc"])
+
+    def train(self, num_epochs=NUM_EPOCHS):
+
+        self.set_criterion_and_optimizer()
+        self._model.to(self._device)
+
+        self._results = {
+            "train_loss": 0,
+            "train_acc": 0,
+            "valid_loss": 0,
+            "valid_acc": 0
+        }
+
+        self._results_dict = {
+            "train_loss": [],
+            "train_acc": [],
+            "valid_loss": [],
+            "valid_acc": []
+        }
+
+        try:
+            from tqdm.auto import tqdm
+            print("'tqdm' found")
+
+            for epoch in tqdm(range(num_epochs)):
+                self._results["train_loss"], self._results["train_acc"] = self.train_step()
+                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step()
+
+                self.train_results(epoch)
+
+        except ModuleNotFoundError:
+            print("'tqdm' not found, using normal range function")
+            for epoch in range(num_epochs):
+                self._results["train_loss"], self._results["train_acc"] = self.train_step()
+                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step()
+
+                self.train_results(epoch)
+
+        return self._results_dict
+
+
+
+
+
+
+
+
+
+
