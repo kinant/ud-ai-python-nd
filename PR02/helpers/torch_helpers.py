@@ -4,7 +4,6 @@
 import torch
 from torch.utils.data import DataLoader
 
-
 def get_best_cuda_device():
     """
     Function to get the best cuda device

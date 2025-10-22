@@ -7,26 +7,11 @@ from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
 import PR02.helpers.utils as utils
 from PR02.helpers.torch_helpers import get_device, print_device_info
-from os import path
+from os import path, makedirs
 from collections import OrderedDict
 
 import json
 from timeit import default_timer as timer
-
-# IMAGE CONSTANTS
-IMG_HEIGHT = 224
-IMG_WIDTH = 224
-IMG_SIZE = (IMG_WIDTH, IMG_HEIGHT)
-IMG_RESIZE = (255, 255)
-BATCH_SIZE = 64
-IMG_ROTATION = 45
-
-# DATASET CONSTANTS
-DATASETS = {
-    'train': 'train',
-    'valid': 'valid',
-    'test': 'test',
-}
 
 # FOR MODEL DEFINITION AND TRAINING
 ARCHITECTURES = {
@@ -41,7 +26,31 @@ DROP_OUT = 0.5
 NUM_EPOCHS = 25
 USE_CUDA = True
 
-class ImageClassifier():
+# PHASE/DATALOADERS CONSTANTS
+TRAIN = "train"
+TEST = "test"
+VALID = "valid"
+
+def load_checkpoint(filepath):
+    checkpoint = torch.load(filepath)
+
+    model_arch = checkpoint["model_arch"]
+    n_hidden = checkpoint["hidden_units"]
+    learning_rate = checkpoint["learning_rate"]
+    class_to_idx = checkpoint["class_to_idx"]
+
+    new_classifier = ImageClassifier(model_arch, n_hidden=n_hidden, lr=learning_rate)
+    new_classifier._num_classes = checkpoint["output_size"]
+
+    new_classifier.init_model()
+    new_classifier.set_classifier()
+
+    new_classifier.model.load_state_dict(checkpoint["state_dict"])
+    new_classifier.model.class_to_idx = class_to_idx
+
+    return new_classifier
+
+class ImageClassifier:
 
     def set_params_requires_grad_false(self):
         if self._model is not None:
@@ -63,7 +72,7 @@ class ImageClassifier():
 
         self.set_params_requires_grad_false()
 
-    def __init__(self, model_name=ARCHITECTURES['vgg'], n_hidden=HIDDEN_UNITS,
+    def __init__(self, model_name=ARCHITECTURES['vgg'], n_classes=0, n_hidden=HIDDEN_UNITS,
                  lr=LEARNING_RATE, n_epochs=NUM_EPOCHS, checkpoint_dir="", use_cuda=USE_CUDA):
         self._model_name = model_name
         self._model = None
@@ -78,17 +87,7 @@ class ImageClassifier():
         else:
             self._device = get_device('cpu')
 
-        self._data_dirs: dict = {}
-        self._data_transforms: dict = {}
-        self._image_datasets: dict = {}
-        self._data_dict: dict = {}
-        self._dataloaders: dict = {}
-        self._dataset_sizes: dict = {}
-        self.set_data_transforms()
-
-        self._class_names: list = []
-        self._cat_to_name: list = []
-        self._num_classes = 0
+        self._num_classes = n_classes
         self._num_features = 0
 
         self._criterion = None
@@ -108,96 +107,9 @@ class ImageClassifier():
             "valid_acc": []
         }
 
-
-
     @property
     def model(self):
         return self._model
-
-    @property
-    def data_transforms(self) -> dict:
-        return self._data_transforms
-
-    @property
-    def data_dirs(self) -> dict:
-        return self._data_dirs
-
-    @property
-    def image_datasets(self) -> dict:
-        return self._image_datasets
-
-    @property
-    def dataloaders(self) -> dict:
-        return self._dataloaders
-
-    @property
-    def dataset_sizes(self) -> dict:
-        return self._dataset_sizes
-
-    @property
-    def cat_to_name(self) -> list:
-        return self._cat_to_name
-
-    def set_data_transforms(self) -> None:
-        self._data_transforms = {
-            DATASETS['train']: transforms.Compose([transforms.RandomRotation(IMG_ROTATION),
-                                             transforms.RandomResizedCrop(IMG_SIZE),
-                                             transforms.RandomHorizontalFlip(),
-                                             transforms.ToTensor(),
-                                             transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)]),
-
-            DATASETS['valid']: transforms.Compose([transforms.Resize(IMG_RESIZE),
-                                             transforms.CenterCrop(IMG_SIZE),
-                                             transforms.ToTensor(),
-                                             transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)]),
-
-            DATASETS['test']: transforms.Compose([transforms.Resize(IMG_RESIZE),
-                                             transforms.CenterCrop(IMG_SIZE),
-                                             transforms.ToTensor(),
-                                             transforms.Normalize(utils.NORMALIZING_MEAN, utils.NORMALIZING_STD)])
-        }
-
-    def load_data(self, data_dir: str) -> None:
-
-        self._data_dirs = {
-            key: path.join(data_dir, DATASETS[key])
-            for key in DATASETS.keys()
-        }
-
-        self._image_datasets = {
-            key: datasets.ImageFolder(self._data_dirs[key], transform=self.data_transforms[key])
-            for key in DATASETS.keys()
-        }
-
-        self._dataset_sizes = {key: len(self._image_datasets[key]) for key in DATASETS.keys()}
-
-        self._dataloaders = {
-
-            DATASETS['train']: torch.utils.data.DataLoader(
-                self._image_datasets['train'],
-                batch_size=BATCH_SIZE,
-                shuffle=True,
-            ),
-
-            DATASETS['valid']: torch.utils.data.DataLoader(
-                self._image_datasets['valid'],
-                batch_size=BATCH_SIZE,
-                shuffle=False,
-            ),
-
-            DATASETS['test']: torch.utils.data.DataLoader(
-                self._image_datasets['test'],
-                batch_size=BATCH_SIZE,
-                shuffle=False,
-            )
-        }
-
-        self._class_names = self._image_datasets['train'].classes
-        self._num_classes = len(self._class_names)
-
-    def load_cat_to_name(self, filepath: str) -> None:
-        with open(filepath, 'r') as f:
-            self._cat_to_name = json.load(f)
 
     def show_model_summary(self) -> None:
         print(f'Model summary:')
@@ -216,22 +128,19 @@ class ImageClassifier():
     def show_model_device_info(self):
         print_device_info(self._device)
 
-    def get_class_to_idx(self):
-        return self._image_datasets['train'].class_to_idx
-
     def set_criterion_and_optimizer(self):
         self._criterion = nn.CrossEntropyLoss()
         self._optimizer = optim.SGD(self._model.parameters(), lr=LEARNING_RATE)
 
     # https://www.kaggle.com/code/tirendazacademy/cats-dogs-classification-with-pytorch
-    def train_step(self):
+    def train_step(self, dataloader):
         # Put the model in train mode
         self._model.train()
 
         # Init train loss and train accuracy
         train_loss, train_correct = 0, 0
 
-        for inputs, labels in self._dataloaders['train']:
+        for inputs, labels in dataloader:
             inputs, labels = inputs.to(self._device), labels.to(self._device)
 
             # Reset gradients
@@ -257,7 +166,7 @@ class ImageClassifier():
             _, top_class = ps.topk(1, dim=1)
 
             # Get list of all equalities top_class == label
-            equals = top_class == labels.view(*top_class.shape)
+            equals: torch.Tensor = torch.Tensor(top_class == labels.view(*top_class.shape))
 
             # print(f"TRAIN EQUALS: {equals}")
 
@@ -266,12 +175,12 @@ class ImageClassifier():
             # print(f"Running Train Corrects: {train_correct}")
 
         # Calculate metrics
-        train_loss = train_loss / len(self._dataloaders['train'].dataset)
-        train_accuracy = train_correct / len(self._dataloaders['train'].dataset)
+        train_loss = train_loss / len(dataloader.dataset)
+        train_accuracy = train_correct / len(dataloader.dataset)
 
         return train_loss, train_accuracy
 
-    def valid_step(self):
+    def valid_step(self, dataloader):
         # Put model in eval mode
         self._model.eval()
 
@@ -281,7 +190,7 @@ class ImageClassifier():
         # Turn on inference context manager
         with torch.no_grad():
             # Loop through DataLoader batches
-            for inputs, labels in self._dataloaders['valid']:
+            for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self._device), labels.to(self._device)
 
                 # 1. Forward pass
@@ -294,7 +203,7 @@ class ImageClassifier():
                 # Calculate and accumulate accuracy
                 ps = torch.exp(logps)
                 top_p, top_class = ps.topk(1, dim=1)
-                equals = top_class == labels.view(*top_class.shape)
+                equals: torch.Tensor = torch.Tensor(top_class == labels.view(*top_class.shape))
 
                 # print(f"VALID EQUALS: {equals}")
 
@@ -302,8 +211,8 @@ class ImageClassifier():
                 # print(f"Running Valid Corrects: {valid_correct}")
 
         # Adjust metrics to get average loss and accuracy per batch
-        valid_loss = valid_loss / len(self._dataloaders['valid'].dataset)
-        valid_acc = valid_correct / len(self._dataloaders['valid'].dataset)
+        valid_loss = valid_loss / len(dataloader.dataset)
+        valid_acc = valid_correct / len(dataloader.dataset)
         return valid_loss, valid_acc
 
     def train_results(self, epoch) -> None:
@@ -323,7 +232,7 @@ class ImageClassifier():
         self._results_dict["valid_loss"].append(self._results["valid_loss"])
         self._results_dict["valid_acc"].append(self._results["valid_acc"])
 
-    def train(self, num_epochs=NUM_EPOCHS):
+    def train(self, dataloaders, num_epochs=NUM_EPOCHS):
 
         self.set_criterion_and_optimizer()
         self._model.to(self._device)
@@ -351,8 +260,8 @@ class ImageClassifier():
             start_time = timer()
 
             for epoch in tqdm(range(num_epochs)):
-                self._results["train_loss"], self._results["train_acc"] = self.train_step()
-                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step()
+                self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
+                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
 
                 self.train_results(epoch)
 
@@ -362,8 +271,8 @@ class ImageClassifier():
             start_time = timer()
 
             for epoch in range(num_epochs):
-                self._results["train_loss"], self._results["train_acc"] = self.train_step()
-                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step()
+                self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
+                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
 
                 self.train_results(epoch)
 
@@ -373,29 +282,37 @@ class ImageClassifier():
 
         return self._results_dict
 
-    def check_accuracy_on_test_data(self):
+    def check_accuracy_on_test_data(self, dataloader):
         correct, total = 0, 0
 
         self._model.to(self._device)
 
         with torch.no_grad():
-            for inputs, labels in self._dataloaders['test']:
+            for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self._device), labels.to(self._device)
 
                 logps = self._model(inputs)
                 top_p, top_class = logps.topk(1, dim=1)
-                equals = top_class == labels.view(*top_class.shape)
+                equals: torch.Tensor = torch.Tensor(top_class == labels.view(*top_class.shape))
                 correct += equals.sum().item()
                 total += labels.size(0)
 
-        print(f"Accuracy of the network on the {self._dataloaders['test']} test images:{(correct / total) * 100:.2f}%")
+        print(f"Accuracy of the network on the test images:{(correct / total) * 100:.2f}%")
 
+    def save_checkpoint(self, save_dir, dataloader):
 
+        checkpoint = {
+            "model_arch": "vgg",
+            "output_size": self._num_classes,
+            "hidden_units": self._n_hidden,
+            "learning_rate": self._lr,
+            "state_dict": self._model.state_dict(),
+            "class_to_idx": dataloader.get_class_to_idx()
+        }
 
+        filepath = path.join("checkpoints/", "checkpoint.pth")
 
+        if not path.exists("checkpoints/"):
+            makedirs("checkpoints/")
 
-
-
-
-
-
+        torch.save(checkpoint, filepath)

@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from .utils import NORMALIZING_STD, NORMALIZING_MEAN
-import random
 from PIL import Image
+from math import floor
+import torch
 
 def plot_transformed_images(image_paths, transform):
     for image_path in image_paths:
@@ -81,3 +82,80 @@ def plot_loss_curves(training_results):
     plt.title('Accuracy')
     plt.xlabel('Epochs')
     plt.legend();
+
+# https://github.com/kinant/aipnd-project/blob/master/Image%20Classifier%20Project.ipynb
+def process_image(image_path):
+    """Process an image path into a PyTorch tensor"""
+
+    # open the image
+    image = Image.open(image_path)
+
+    print("Original Image size: ", image.size)
+
+    # first resize the images where the shortest side is 256 px
+    width, height = image.size
+    size = 256, 256
+
+    new_width, new_height = None, None
+
+    # if the height is the shorter side
+    if height < width:
+        # find ratio between larger and smaller side
+        ratio = float(width) / float(height)
+        # resize smaller side to 256
+        new_height = 256
+        # resize larger side to 256 * ratio
+        new_width = int(floor(ratio * size[0]))
+    # else, the width is the shorter side
+    else:
+        # find ratio between larger and smaller side
+        ratio = float(height)/float(width)
+        # resize smaller side to 256
+        new_width = 256
+        # resize larger side to 256 * ratio
+        new_height = int(floor(ratio * size[1]))
+
+
+    print("W: {}, H: {}".format(new_width, new_height))
+
+    # resize the image
+    image = image.resize((new_width, new_height))
+
+    print("Resized Image (keep aspect ratio): ", image.size)
+
+    # perform center crop
+    # https://stackoverflow.com/questions/16646183/crop-an-image-in-the-centre-using-pil
+    width, height = image.size   # Get dimensions
+    new_height, new_width = 224, 224
+
+    left = (width - new_width)/2
+    top = (height - new_height)/2
+    right = (width + new_width)/2
+    bottom = (height + new_height)/2
+
+    image = image.crop((left, top, right, bottom))
+    print("cropped image size: ", image.size)
+
+    # convert encoded color channels and convert to floats (divide by 255)
+    np_image = np.array(image) / 255
+    # print(np_image)
+
+    # normalize
+    np_image = (np_image - NORMALIZING_MEAN) / NORMALIZING_STD
+
+    # finally, transpose
+    # print("shape 1: ", np_image.shape)
+    np_image = np_image.transpose((2, 0, 1))
+    # print("transposed shape: ", np_image.shape)
+
+    # Originally, I was returning a numpy array, as I thought these were the instructions, but
+    # when trying to test, it would not work.
+    # Found solution at: https://knowledge.udacity.com/questions/29173
+    # We have to convert to a tensor before we return it
+    return torch.Tensor(np_image)
+
+def process_image_simple(image_path, transform):
+    image = Image.open(image_path)
+    image = transform(image)
+
+    return image
