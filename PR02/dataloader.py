@@ -64,7 +64,7 @@ class ImageDataLoader:
     def get_class_to_idx(self, key=TRAIN):
         return self._image_datasets[TRAIN].class_to_idx
 
-    def __init__(self, datadir, batch_size=BATCH_SIZE):
+    def __init__(self, datadir, batch_size=BATCH_SIZE, load_data=True):
         self._datadir = datadir
         self._batch_size = batch_size
 
@@ -79,7 +79,8 @@ class ImageDataLoader:
         self._num_classes = 0
         self._cat_to_name = {}
 
-        self._load_data()
+        if load_data:
+            self._load_data()
 
     def _build_data_transforms(self):
 

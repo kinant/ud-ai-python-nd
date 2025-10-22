@@ -32,6 +32,7 @@ TEST = "test"
 VALID = "valid"
 
 def load_checkpoint(filepath):
+    print(f"Loading checkpoint from {filepath}")
     checkpoint = torch.load(filepath)
 
     model_arch = checkpoint["model_arch"]
@@ -47,6 +48,7 @@ def load_checkpoint(filepath):
 
     new_classifier.model.load_state_dict(checkpoint["state_dict"])
     new_classifier.model.class_to_idx = class_to_idx
+    print(f"Loading checkpoint from {filepath} COMPLETE")
 
     return new_classifier
 

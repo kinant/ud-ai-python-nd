@@ -53,12 +53,9 @@ def main():
     use_gpu = input_args.gpu
 
     # STEP 1: LOADING DATA
-    # Step 1a: Load Data
     print()
     print(f"========== STEP 1: LOADING DATA ==========")
     dataloader = ImageDataLoader(data_dir)
-    # Step 1b: Load Label Mapping
-    dataloader.load_cat_to_name(CAT_TO_NAME_FILE)
     print(f"========== STEP 1: LOADING DATA COMPLETE ==========")
     print()
 

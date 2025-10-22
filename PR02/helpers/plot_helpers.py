@@ -90,7 +90,7 @@ def process_image(image_path):
     # open the image
     image = Image.open(image_path)
 
-    print("Original Image size: ", image.size)
+    # print("Original Image size: ", image.size)
 
     # first resize the images where the shortest side is 256 px
     width, height = image.size
@@ -116,12 +116,12 @@ def process_image(image_path):
         new_height = int(floor(ratio * size[1]))
 
 
-    print("W: {}, H: {}".format(new_width, new_height))
+    # print("W: {}, H: {}".format(new_width, new_height))
 
     # resize the image
     image = image.resize((new_width, new_height))
 
-    print("Resized Image (keep aspect ratio): ", image.size)
+    # print("Resized Image (keep aspect ratio): ", image.size)
 
     # perform center crop
     # https://stackoverflow.com/questions/16646183/crop-an-image-in-the-centre-using-pil
@@ -134,7 +134,7 @@ def process_image(image_path):
     bottom = (height + new_height)/2
 
     image = image.crop((left, top, right, bottom))
-    print("cropped image size: ", image.size)
+    # print("cropped image size: ", image.size)
 
     # convert encoded color channels and convert to floats (divide by 255)
     np_image = np.array(image) / 255
