@@ -4,7 +4,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-def get_best_cuda_device() -> torch.cuda.Device:
+def get_best_cuda_device() -> torch.device:
     """
     Function to get the best cuda device
     Assumptions:    there is a CUDA device available
@@ -24,7 +24,7 @@ def get_best_cuda_device() -> torch.cuda.Device:
     # Return the best cuda device, based on major device capability
     return torch.device(f"cuda:{best_device}")
 
-def get_device(override: str = None) -> torch.cuda.Device:
+def get_device(override: str = None) -> torch.device:
     """
     Function to get the device to use by PyTorch
     :param override: Optional override for device
@@ -49,7 +49,7 @@ def get_device(override: str = None) -> torch.cuda.Device:
         # the device given by the argument (i.e. "cpu", "cuda", "cuda:0", "mps", etc)
         return torch.device(override)
 
-def print_device_info(device: torch.cuda.Device) -> None:
+def print_device_info(device: torch.device) -> None:
     """
     Function that prints device information
     :param device: the device to print information about
