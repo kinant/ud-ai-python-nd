@@ -4,7 +4,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-def get_best_cuda_device():
+def get_best_cuda_device() -> torch.cuda.Device:
     """
     Function to get the best cuda device
     Assumptions:    there is a CUDA device available
@@ -24,7 +24,7 @@ def get_best_cuda_device():
     # Return the best cuda device, based on major device capability
     return torch.device(f"cuda:{best_device}")
 
-def get_device(override=None):
+def get_device(override: str = None) -> torch.cuda.Device:
     """
     Function to get the device to use by PyTorch
     :param override: Optional override for device
@@ -49,10 +49,19 @@ def get_device(override=None):
         # the device given by the argument (i.e. "cpu", "cuda", "cuda:0", "mps", etc)
         return torch.device(override)
 
-def print_device_info(device):
+def print_device_info(device: torch.cuda.Device) -> None:
+    """
+    Function that prints device information
+    :param device: the device to print information about
+    """
     print(f"Using device: '{device}', with name: '{torch.cuda.get_device_name(device)}'")
 
 def get_batch_data(dataloader: DataLoader) -> tuple:
+    """
+    Function to get a batch of data from a DataLoader
+    :param dataloader: the dataloader to get data from
+    :return: batch of images and labels as a tuple
+    """
     if dataloader is not None:
         images, labels = next(iter(dataloader))
         return images, labels
