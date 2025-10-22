@@ -1,3 +1,3 @@
 from .torch_helpers import *
-from .plot_helpers import *
+from .visualization import *
 from .utils import *

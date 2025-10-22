@@ -54,7 +54,7 @@ def load_checkpoint(filepath):
 
 class ImageClassifier:
 
-    def set_params_requires_grad_false(self):
+    def _set_params_requires_grad_false(self):
         if self._model is not None:
             for param in self.model.parameters():
                 param.requires_grad = False
@@ -72,7 +72,7 @@ class ImageClassifier:
             self._model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
             self._num_features = self._model.classifier[0].in_features
 
-        self.set_params_requires_grad_false()
+        self._set_params_requires_grad_false()
 
     def __init__(self, model_name=ARCHITECTURES['vgg'], n_classes=0, n_hidden=HIDDEN_UNITS,
                  lr=LEARNING_RATE, n_epochs=NUM_EPOCHS, checkpoint_dir="", use_cuda=USE_CUDA):
@@ -129,15 +129,15 @@ class ImageClassifier:
                 ('output', nn.LogSoftmax(dim=1))
             ]))
 
-    def show_model_device_info(self):
+    def show_device_info(self):
         print_device_info(self._device)
 
-    def set_criterion_and_optimizer(self):
+    def _set_criterion_and_optimizer(self):
         self._criterion = nn.CrossEntropyLoss()
-        self._optimizer = optim.SGD(self._model.parameters(), lr=LEARNING_RATE)
+        self._optimizer = optim.SGD(self._model.parameters(), lr=self._lr)
 
     # https://www.kaggle.com/code/tirendazacademy/cats-dogs-classification-with-pytorch
-    def train_step(self, dataloader):
+    def _train_step(self, dataloader):
         # Put the model in train mode
         self._model.train()
 
@@ -184,7 +184,7 @@ class ImageClassifier:
 
         return train_loss, train_accuracy
 
-    def valid_step(self, dataloader):
+    def _valid_step(self, dataloader):
         # Put model in eval mode
         self._model.eval()
 
@@ -219,7 +219,7 @@ class ImageClassifier:
         valid_acc = valid_correct / len(dataloader.dataset)
         return valid_loss, valid_acc
 
-    def train_results(self, epoch):
+    def _train_results(self, epoch):
 
         # Print Results
         print(
@@ -240,7 +240,7 @@ class ImageClassifier:
 
     def train(self, dataloaders, num_epochs=NUM_EPOCHS):
 
-        self.set_criterion_and_optimizer()
+        self._set_criterion_and_optimizer()
         self._model.to(self._device)
 
         self._results = {
@@ -269,10 +269,10 @@ class ImageClassifier:
             start_time = timer()
 
             for epoch in tqdm(range(num_epochs)):
-                self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
-                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
+                self._results["train_loss"], self._results["train_acc"] = self._train_step(dataloaders[TRAIN])
+                self._results["valid_loss"], self._results["valid_acc"] = self._valid_step(dataloaders[VALID])
 
-                epoch_acc = self.train_results(epoch)
+                epoch_acc = self._train_results(epoch)
 
                 if epoch_acc > best_acc:
                     self._best_state_dict = copy.deepcopy(self._model.state_dict())
@@ -284,10 +284,10 @@ class ImageClassifier:
             start_time = timer()
 
             for epoch in range(num_epochs):
-                self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
-                self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
+                self._results["train_loss"], self._results["train_acc"] = self._train_step(dataloaders[TRAIN])
+                self._results["valid_loss"], self._results["valid_acc"] = self._valid_step(dataloaders[VALID])
 
-                epoch_acc = self.train_results(epoch)
+                epoch_acc = self._train_results(epoch)
 
                 if epoch_acc > best_acc:
                     self._best_state_dict = copy.deepcopy(self._model.state_dict())

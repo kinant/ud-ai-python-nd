@@ -4,7 +4,7 @@ import argparse
 from dataloader import ImageDataLoader
 from classifier import load_checkpoint
 
-from helpers import plot_helpers as ph
+from helpers import visualization as ph
 import helpers.torch_helpers as thlp
 
 def main():
