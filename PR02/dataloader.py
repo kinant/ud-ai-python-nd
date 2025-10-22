@@ -6,7 +6,7 @@ from torchvision import datasets, transforms, models
 import json
 from os import path
 
-import PR02.helpers.utils as utils
+import helpers.utils as utils
 
 # IMAGE CONSTANTS
 IMG_HEIGHT = 224
@@ -118,6 +118,7 @@ class ImageDataLoader:
 
         print(f"Data Dirs: {self._data_dirs}")
 
+        print(f"Loading image datasets...")
         self._image_datasets = {
             key: datasets.ImageFolder(self._data_dirs[key], transform=self.data_transforms[key])
             for key in DATASETS.keys()
@@ -125,6 +126,7 @@ class ImageDataLoader:
 
         self._dataset_sizes = {key: len(self._image_datasets[key]) for key in DATASETS.keys()}
 
+        print(f"Creating data loaders...")
         self._dataloaders = {
 
             DATASETS[TRAIN]: torch.utils.data.DataLoader(
@@ -148,3 +150,4 @@ class ImageDataLoader:
 
         self._class_names = self._image_datasets[TRAIN].classes
         self._num_classes = len(self._class_names)
+        print(f"Data successfully loaded!")

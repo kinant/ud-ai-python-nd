@@ -1,12 +1,12 @@
+import copy
 from typing import Any
 
 import torch
 from torch import nn, optim
 
-from PR02.helpers.torch_helpers import get_device
 from torchvision import datasets, transforms, models
-import PR02.helpers.utils as utils
-from PR02.helpers.torch_helpers import get_device, print_device_info
+import helpers.utils as utils
+from helpers.torch_helpers import get_device, print_device_info
 from os import path, makedirs
 from collections import OrderedDict
 
@@ -107,6 +107,8 @@ class ImageClassifier:
             "valid_acc": []
         }
 
+        self._best_state_dict = None
+
     @property
     def model(self):
         return self._model
@@ -115,13 +117,13 @@ class ImageClassifier:
         print(f'Model summary:')
         print(self._model)
 
-    def set_classifier(self, n_hidden=HIDDEN_UNITS) -> None:
+    def set_classifier(self) -> None:
         self._model.classifier = nn.Sequential(
             OrderedDict([
-                ('fc1', nn.Linear(self._num_features, n_hidden)),
+                ('fc1', nn.Linear(self._num_features, self._n_hidden)),
                 ('drop', nn.Dropout(DROP_OUT)),
                 ('relu', nn.ReLU()),
-                ('fc2', nn.Linear(n_hidden, self._num_classes)),
+                ('fc2', nn.Linear(self._n_hidden, self._num_classes)),
                 ('output', nn.LogSoftmax(dim=1))
             ]))
 
@@ -215,7 +217,7 @@ class ImageClassifier:
         valid_acc = valid_correct / len(dataloader.dataset)
         return valid_loss, valid_acc
 
-    def train_results(self, epoch) -> None:
+    def train_results(self, epoch):
 
         # Print Results
         print(
@@ -231,6 +233,8 @@ class ImageClassifier:
         self._results_dict["train_acc"].append(self._results["train_acc"])
         self._results_dict["valid_loss"].append(self._results["valid_loss"])
         self._results_dict["valid_acc"].append(self._results["valid_acc"])
+
+        return self._results["valid_acc"]
 
     def train(self, dataloaders, num_epochs=NUM_EPOCHS):
 
@@ -253,6 +257,9 @@ class ImageClassifier:
 
         start_time = None
 
+        self._best_state_dict = copy.deepcopy(self._model.state_dict())
+        best_acc = 0.0
+
         try:
             from tqdm.auto import tqdm
             print("'tqdm' found")
@@ -263,7 +270,11 @@ class ImageClassifier:
                 self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
                 self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
 
-                self.train_results(epoch)
+                epoch_acc = self.train_results(epoch)
+
+                if epoch_acc > best_acc:
+                    self._best_state_dict = copy.deepcopy(self._model.state_dict())
+                    best_acc = epoch_acc
 
         except ModuleNotFoundError:
             print("'tqdm' not found, using normal range function")
@@ -274,11 +285,18 @@ class ImageClassifier:
                 self._results["train_loss"], self._results["train_acc"] = self.train_step(dataloaders[TRAIN])
                 self._results["valid_loss"], self._results["valid_acc"] = self.valid_step(dataloaders[VALID])
 
-                self.train_results(epoch)
+                epoch_acc = self.train_results(epoch)
+
+                if epoch_acc > best_acc:
+                    self._best_state_dict = copy.deepcopy(self._model.state_dict())
+                    best_acc = epoch_acc
 
         end_time = timer()
         elapsed_time = end_time - start_time
         print(f"Training Complete! Total training time: {elapsed_time} seconds")
+
+        # Save best training weights
+        self.model.load_state_dict(self._best_state_dict)
 
         return self._results_dict
 
