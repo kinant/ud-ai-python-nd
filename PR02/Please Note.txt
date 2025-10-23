@@ -3,13 +3,16 @@ Please Note:
 1. Project code is in folder PR02 inside the repo
 	- https://github.com/kinant/ud-ai-python-nd/tree/main/PR02
 
-2. Notebook HTML file is: 
+2. Notebook HTML file is: Image Classifier Project_V2.1_Final.html
+
+3. Notebook submitted is pretty simple, but if you want more details as to how I got there,
+You can look at previous versions of the notebooks that I saved in the project folder. 
 
 3. I used the following resources for help:
 - https://www.kaggle.com/code/tirendazacademy/cats-dogs-classification-with-pytorch
 - https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 
-4. For some of the util functions, I used my old code from 2019, from when I passed the nanodegree
+4. For some of the util functions, I used my old code from 2019 as reference, from when I passed the nanodegree
 with another email account. This is a private repo but I can make it public or share it if necessary.
 I decided to start this nanodegree from scratch since I pretty much forgot everything since 2019.  
 
