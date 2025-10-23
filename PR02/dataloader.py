@@ -159,6 +159,7 @@ class ImageDataLoader:
             )
         }
 
+        # set the class names and number of classes
         self._class_names = self._image_datasets[TRAIN].classes
         self._num_classes = len(self._class_names)
         print(f"Data successfully loaded!")
