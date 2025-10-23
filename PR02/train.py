@@ -1,3 +1,6 @@
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Program that trains a pre-trained model on the flowers dataset
 import argparse
 from classifier import ImageClassifier
 from dataloader import ImageDataLoader
@@ -18,7 +21,7 @@ def get_command_line_args():
     parser.add_argument('--save_dir', type=str, default='', help='path to save checkpoint')
 
     parser.add_argument('--arch', type=str, default=
-    'vgg', help='CNN Model Architecture to use')
+    'alexnet', help='CNN Model Architecture to use')
 
     parser.add_argument('--learning_rate', type=float, default=
     0.001, help='training learning rate')
@@ -74,7 +77,7 @@ def main():
     image_classifier.set_classifier()
 
     image_classifier.show_model_summary()
-    image_classifier.show_model_device_info()
+    image_classifier.show_device_info()
 
     print(f"--- BEGINNING TRAINING....")
     results = image_classifier.train(dataloaders=dataloader.dataloaders, num_epochs=epochs)

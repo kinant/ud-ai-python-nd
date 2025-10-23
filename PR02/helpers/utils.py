@@ -1,6 +1,6 @@
-# -------------------------------
-# General Utilities
-# -------------------------------
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Helper utility functions
 import importlib.util
 import random
 from os import path, listdir

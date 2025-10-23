@@ -1,3 +1,7 @@
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Helper functions for visualization and processing images
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms.v2

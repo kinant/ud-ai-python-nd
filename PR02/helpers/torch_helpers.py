@@ -1,6 +1,6 @@
-# -------------------------------
-# PyTorch Helpers
-# -------------------------------
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Helper functions to use with PyTorch
 import torch
 from torch.utils.data import DataLoader
 

@@ -1,3 +1,7 @@
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Defining a class for a custom image classifier
+
 import torch
 from torch import nn, optim
 from torchvision import models
@@ -34,7 +38,7 @@ class ImageClassifier:
     def model(self) -> nn.Module:
         return self._model
 
-    def __init__(self, model_name=ARCHITECTURES['vgg'], n_classes=0, n_hidden=HIDDEN_UNITS,
+    def __init__(self, model_name=ARCHITECTURES['alexnet'], n_classes=0, n_hidden=HIDDEN_UNITS,
                  lr=LEARNING_RATE, n_epochs=NUM_EPOCHS, checkpoint_dir="", use_cuda=USE_CUDA)-> None:
         """
         Initialize the ImageClassifier
@@ -411,7 +415,7 @@ class ImageClassifier:
 
         # Get the checkpoint data
         checkpoint = {
-            "model_arch": "vgg",
+            "model_arch": self._model_name,
             "output_size": self._num_classes,
             "hidden_units": self._n_hidden,
             "learning_rate": self._lr,

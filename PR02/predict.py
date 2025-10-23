@@ -1,3 +1,6 @@
+# PROGRAMMER: Kinan Turman
+# DATE UPDATED: Oct. 22, 2025
+# PURPOSE: Program that predicts the class of an image using a saved model
 import torch
 import argparse
 
@@ -8,6 +11,7 @@ from helpers import visualization as ph
 import helpers.torch_helpers as thlp
 
 def main():
+    # Get the command line args
     input_args = get_command_line_args()
 
     img_path = input_args.img_path
@@ -31,6 +35,7 @@ def main():
     # print(f"Probs: {probs}\nClasses: {classes}")
     # print(f"Cat names: {cat_names_file}")
 
+    # STEP:3: print the results
     if cat_names_file:
         print_results(classes, probs, cat_names_file, using_mapping=True)
     else:
@@ -61,35 +66,46 @@ def get_command_line_args():
 
     return parser.parse_args()
 
-# https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html#inference-on-custom-images
 def predict(image_path, model, device, topk=5):
-    ''' Predict the class (or classes) of an image using a trained deep learning model.
-    '''
+    """
+    Predict the class (or classes) of an image using a trained deep learning model.
+    Reference: https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html#inference-on-custom-images
+    """
     model.eval()
     model.to(device)
 
+    # get the processed image and unsqueeze it (1-D vector)
     processed_image = ph.process_image(image_path)
     processed_image = torch.unsqueeze(processed_image, 0).to(device)
 
     with torch.no_grad():
 
+        # Perform the forward step (inference) and get the probability logits
         logps = model.forward(processed_image)
+
+        # convert to probabilities
         ps = torch.exp(logps)
+
+        # get the top k probabilities and classes and return
         probs, classes = ps.topk(topk)
 
     return probs, classes
 
 def print_results(classes, probs, filename, using_mapping=False):
-
+    """
+    Function that prints the results of predict/inference
+    """
     print()
     print(f"========== PREDICTION RESULTS ==========")
     print(f"========================================")
     print()
 
+    # check if using the mapping
     if using_mapping:
         dataloader = ImageDataLoader("", load_data=False)
         dataloader.load_cat_to_name(filename)
 
+    # iterate over each class and probability and print the results
     for cls, p in zip(classes.tolist()[0], probs.tolist()[0]):
         if using_mapping:
             print(f"Class: '{dataloader.cat_to_name[str(cls)]}'", end="")
